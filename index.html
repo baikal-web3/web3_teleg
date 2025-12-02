@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Gen</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            /* Цвета берутся автоматически из темы пользователя в Telegram */
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            font-family: sans-serif;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        input, select, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--tg-theme-hint-color);
+            background-color: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+            outline: none;
+        }
+        /* Основная кнопка MainButton (нативная, внизу экрана) настраивается через JS */
+    </style>
+</head>
+<body>
+    <h3>Генератор постов 🤖</h3>
+    
+    <label>Тема поста:</label>
+    <input type="text" id="topic" placeholder="Например: Как варить кофе">
+
+    <label>Тональность:</label>
+    <select id="tone">
+        <option value="Профессиональный">👔 Профессиональный</option>
+        <option value="Смешной">😂 Смешной</option>
+        <option value="Агрессивный">😡 Агрессивный</option>
+    </select>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Раскрыть на весь экран
+
+        // Настраиваем Главную Кнопку (Main Button)
+        tg.MainButton.textColor = '#FFFFFF';
+        tg.MainButton.color = '#2cab37';
+        tg.MainButton.setText("СГЕНЕРИРОВАТЬ");
+
+        // Показываем кнопку, когда пользователь начал вводить текст
+        let topicInput = document.getElementById("topic");
+        topicInput.addEventListener('input', function() {
+            if (topicInput.value.trim() !== "") {
+                tg.MainButton.show();
+            } else {
+                tg.MainButton.hide();
+            }
+        });
+
+        // Отправка данных боту при нажатии
+        Telegram.WebApp.onEvent('mainButtonClicked', function(){
+            let data = {
+                topic: document.getElementById("topic").value,
+                tone: document.getElementById("tone").value
+            };
+            // Отправляем JSON-строку боту
+            tg.sendData(JSON.stringify(data)); 
+        });
+    </script>
+</body>
+</html>
