@@ -1,75 +1,426 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Content Gen</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            /* Цвета берутся автоматически из темы пользователя в Telegram */
-            background-color: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-            font-family: sans-serif;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        input, select, textarea {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--tg-theme-hint-color);
-            background-color: var(--tg-theme-secondary-bg-color);
-            color: var(--tg-theme-text-color);
-            outline: none;
-        }
-        /* Основная кнопка MainButton (нативная, внизу экрана) настраивается через JS */
-    </style>
+  <meta charset="UTF-8" />
+  <title>BAIKAL WEB3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #1a1a3d 0%, #050510 40%, #000000 100%);
+      color: #fff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+
+    .glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 255, 255, 0.25), transparent 60%);
+      filter: blur(40px);
+      opacity: 0.7;
+      z-index: -1;
+      animation: floatGlow 16s ease-in-out infinite alternate;
+    }
+
+    .glow.g2 {
+      background: radial-gradient(circle, rgba(130, 88, 255, 0.4), transparent 65%);
+      animation-duration: 18s;
+      animation-delay: -4s;
+    }
+
+    @keyframes floatGlow {
+      0% {
+        transform: translate(-40%, -40%);
+      }
+      50% {
+        transform: translate(20%, -10%);
+      }
+      100% {
+        transform: translate(50%, 40%);
+      }
+    }
+
+    .card {
+      position: relative;
+      width: min(900px, 100%);
+      padding: 40px 32px 36px;
+      border-radius: 32px;
+      background: linear-gradient(145deg, rgba(10, 10, 25, 0.95), rgba(3, 3, 12, 0.98));
+      border: 1px solid rgba(130, 88, 255, 0.35);
+      box-shadow:
+        0 0 30px rgba(130, 88, 255, 0.25),
+        0 0 60px rgba(0, 255, 255, 0.12),
+        inset 0 0 40px rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background: conic-gradient(
+        from 120deg,
+        rgba(0, 255, 255, 0.0),
+        rgba(0, 255, 255, 0.65),
+        rgba(130, 88, 255, 0.85),
+        rgba(255, 0, 122, 0.6),
+        rgba(0, 255, 255, 0.0)
+      );
+      opacity: 0;
+      transition: opacity 0.6s ease-out;
+      z-index: -1;
+    }
+
+    .card:hover::before {
+      opacity: 0.35;
+      animation: spinBorder 10s linear infinite;
+    }
+
+    @keyframes spinBorder {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(0, 255, 255, 0.4);
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #9be8ff;
+      margin-bottom: 20px;
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #00ffd5;
+      box-shadow: 0 0 12px #00ffd5;
+    }
+
+    .top-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .title-block {
+      max-width: 520px;
+    }
+
+    h1 {
+      font-size: clamp(32px, 5vw, 44px);
+      line-height: 1.05;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      color: #f9fbff;
+    }
+
+    h1 span.accent {
+      display: inline-block;
+      background: linear-gradient(120deg, #00ffd5, #9b5bff, #ff007a);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 20px rgba(0, 255, 213, 0.6);
+    }
+
+    .subtitle {
+      font-size: 14px;
+      max-width: 420px;
+      color: #a5b1ff;
+      opacity: 0.9;
+    }
+
+    .pill {
+      align-self: flex-start;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(155, 91, 255, 0.6);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #e0d4ff;
+      background: radial-gradient(circle at top left, rgba(155, 91, 255, 0.35), transparent);
+      box-shadow: 0 0 16px rgba(155, 91, 255, 0.45);
+    }
+
+    .scene {
+      position: relative;
+      width: 100%;
+      margin: 8px auto 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1000px;
+    }
+
+    .ring-wrapper {
+      position: relative;
+      width: 360px;
+      height: 360px;
+      max-width: 80vw;
+      transform-style: preserve-3d;
+      animation: tilt 14s ease-in-out infinite alternate;
+    }
+
+    @keyframes tilt {
+      0% {
+        transform: rotateX(22deg) rotateY(-18deg);
+      }
+      50% {
+        transform: rotateX(32deg) rotateY(18deg);
+      }
+      100% {
+        transform: rotateX(26deg) rotateY(-12deg);
+      }
+    }
+
+    .ring {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      transform-style: preserve-3d;
+      animation: spin 10s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotateY(0deg);
+      }
+      100% {
+        transform: rotateY(360deg);
+      }
+    }
+
+    .ring-face {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform-style: preserve-3d;
+      transform-origin: center;
+    }
+
+    .ring-face span {
+      display: inline-flex;
+      padding: 12px 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 255, 255, 0.7);
+      background: radial-gradient(circle at top, rgba(0, 0, 0, 0.9), rgba(0, 8, 40, 0.9));
+      color: #f6feff;
+      font-size: 18px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      box-shadow:
+        0 0 22px rgba(0, 255, 255, 0.8),
+        0 0 40px rgba(155, 91, 255, 0.7);
+      text-shadow:
+        0 0 10px rgba(0, 255, 255, 0.9),
+        0 0 22px rgba(155, 91, 255, 0.7);
+      white-space: nowrap;
+    }
+
+    .ring-face::before {
+      content: "";
+      position: absolute;
+      inset: -12px;
+      border-radius: inherit;
+      border: 1px dashed rgba(0, 255, 255, 0.25);
+      opacity: 0.7;
+    }
+
+    .ring-face:nth-child(1) {
+      transform: rotateY(0deg) translateZ(140px) translate(-50%, -50%);
+    }
+
+    .ring-face:nth-child(2) {
+      transform: rotateY(90deg) translateZ(140px) translate(-50%, -50%);
+    }
+
+    .ring-face:nth-child(3) {
+      transform: rotateY(180deg) translateZ(140px) translate(-50%, -50%);
+    }
+
+    .ring-face:nth-child(4) {
+      transform: rotateY(270deg) translateZ(140px) translate(-50%, -50%);
+    }
+
+    .ring-glow {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 255, 255, 0.2), transparent 60%);
+      filter: blur(12px);
+      transform: translateZ(-40px);
+    }
+
+    .ring-base {
+      position: absolute;
+      inset: auto 18%;
+      height: 48px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 0, 0, 0.9), rgba(1, 2, 20, 1));
+      box-shadow:
+        0 0 40px rgba(0, 0, 0, 0.9),
+        0 0 80px rgba(0, 255, 255, 0.18);
+      transform: translateZ(-120px) rotateX(90deg);
+    }
+
+    .ring-base::before {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: inherit;
+      border: 1px solid rgba(0, 255, 255, 0.4);
+      opacity: 0.5;
+    }
+
+    .bottom-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #b9c0ff;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(10, 10, 30, 0.95);
+      border: 1px solid rgba(93, 118, 255, 0.6);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #d6deff;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 255, 255, 0.7);
+      background: linear-gradient(135deg, rgba(0, 255, 255, 0.25), rgba(155, 91, 255, 0.45));
+      color: #000c18;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      box-shadow:
+        0 0 22px rgba(0, 255, 255, 0.75),
+        0 0 36px rgba(155, 91, 255, 0.75);
+      transition: transform 0.18s ease-out, box-shadow 0.18s ease-out;
+    }
+
+    .cta:hover {
+      transform: translateY(-1px) scale(1.02);
+      box-shadow:
+        0 0 30px rgba(0, 255, 255, 0.95),
+        0 0 50px rgba(155, 91, 255, 0.95);
+    }
+
+    .cta::after {
+      content: "↗";
+      font-size: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 28px 18px 24px;
+        border-radius: 24px;
+      }
+      .top-row {
+        gap: 14px;
+      }
+      .subtitle {
+        max-width: none;
+      }
+      .ring-wrapper {
+        width: 280px;
+        height: 280px;
+      }
+      .ring-face span {
+        font-size: 15px;
+        letter-spacing: 0.28em;
+        padding: 10px 18px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h3>Генератор постов 🤖</h3>
-    
-    <label>Тема поста:</label>
-    <input type="text" id="topic" placeholder="Например: Как варить кофе">
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
 
-    <label>Тональность:</label>
-    <select id="tone">
-        <option value="Профессиональный">👔 Профессиональный</option>
-        <option value="Смешной">😂 Смешной</option>
-        <option value="Агрессивный">😡 Агрессивный</option>
-    </select>
+  <main class="card">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      <span>Next‑gen Web3 Studio</span>
+    </div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand(); // Раскрыть на весь экран
+    <div class="top-row">
+      <div class="title-block">
+        <h1><span class="accent">BAIKAL</span> WEB3</h1>
+        <p class="subtitle">
+          Футуристичный Web3‑хаб с акцентом на 3D, неон и децентрализованные продукты нового поколения.
+        </p>
+      </div>
+      <div class="pill">Dark Neon • 3D • Crypto</div>
+    </div>
 
-        // Настраиваем Главную Кнопку (Main Button)
-        tg.MainButton.textColor = '#FFFFFF';
-        tg.MainButton.color = '#2cab37';
-        tg.MainButton.setText("СГЕНЕРИРОВАТЬ");
+    <section class="scene" aria-label="3D BAIKAL WEB3">
+      <div class="ring-wrapper">
+        <div class="ring-glow"></div>
+        <div class="ring">
+          <div class="ring-face"><span>BAIKAL WEB3</span></div>
+          <div class="ring-face"><span>BAIKAL WEB3</span></div>
+          <div class="ring-face"><span>BAIKAL WEB3</span></div>
+          <div class="ring-face"><span>BAIKAL WEB3</span></div>
+        </div>
+        <div class="ring-base"></div>
+      </div>
+    </section>
 
-        // Показываем кнопку, когда пользователь начал вводить текст
-        let topicInput = document.getElementById("topic");
-        topicInput.addEventListener('input', function() {
-            if (topicInput.value.trim() !== "") {
-                tg.MainButton.show();
-            } else {
-                tg.MainButton.hide();
-            }
-        });
-
-        // Отправка данных боту при нажатии
-        Telegram.WebApp.onEvent('mainButtonClicked', function(){
-            let data = {
-                topic: document.getElementById("topic").value,
-                tone: document.getElementById("tone").value
-            };
-            // Отправляем JSON-строку боту
-            tg.sendData(JSON.stringify(data)); 
-        });
-    </script>
+    <div class="bottom-row">
+      <div class="tags">
+        <div class="tag">DeFi</div>
+        <div class="tag">NFT</div>
+        <div class="tag">Metaverse</div>
+        <div class="tag">AI‑Agents</div>
+      </div>
+      <a href="#" class="cta">Launch dApp</a>
+    </div>
+  </main>
 </body>
 </html>
