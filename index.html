@@ -1,134 +1,75 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>BAIKAL WEB3 • Soon</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/@tonconnect/sdk@1.0.0/dist/tonconnect-sdk.min.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    body { margin: 0; font-family: Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; }
+    #coins { font-size: 4em; margin: 20px; cursor: pointer; transition: transform 0.1s; }
+    #coins:active { transform: scale(0.95); }
+    button { background: #00d4aa; border: none; padding: 15px 30px; border-radius: 25px; font-size: 1.2em; margin: 10px; cursor: pointer; }
+    #balance { font-size: 2em; margin: 20px; }
+  </style>
+</head>
+<body>
+  <h1>TAPTON Game 🚀</h1>
+  <div id="balance">Баланс: <span id="tapCount">0</span> $TAPTON</div>
+  <div id="coins">🪙</div>
+  <button onclick="claimAirdrop()">Airdrop TON (0.01)</button>
+  <button onclick="upgrade()">Улучшить (+2x)</button>
+  <div id="connectBtn"></div>
+
+  <script>
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+
+    let tapCount = localStorage.getItem('tapCount') || 0;
+    let multiplier = 1;
+    document.getElementById('tapCount').innerText = tapCount;
+
+    // Клик по монете
+    document.getElementById('coins').onclick = () => {
+      tapCount = parseInt(tapCount) + multiplier;
+      document.getElementById('tapCount').innerText = tapCount;
+      localStorage.setItem('tapCount', tapCount);
+    };
+
+    // Улучшение
+    function upgrade() {
+      if (tapCount >= 100) {
+        tapCount -= 100;
+        multiplier += 1;
+        alert(`Множитель: x${multiplier}`);
+        updateUI();
+      }
     }
 
-    :root {
-      --bg-main: #02030a;
-      --accent-cyan: #00f5ff;
-      --accent-violet: #9b5bff;
-      --accent-pink: #ff0f7b;
-      --text-soft: #98a3ff;
-      --border-soft: rgba(106, 122, 255, 0.5);
+    // TON Connect для airdrop
+    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+      manifestUrl: 'https://your-site.com/tonconnect-manifest.json' // Создай позже
+    });
+
+    function claimAirdrop() {
+      if (tapCount >= 1000) {
+        // Отправка 0.01 TON на кошелёк
+        const transaction = {
+          validUntil: Math.floor(Date.now() / 1000) + 300,
+          messages: [{
+            address: Telegram.WebApp.initDataUnsafe.user.id + '@wallet', // Твой wallet
+            amount: '10000000', // 0.01 TON
+            payload: 'TAPTON Airdrop!'
+          }]
+        };
+        tonConnectUI.sendTransaction(transaction);
+      } else {
+        alert('Набери 1000 $TAPTON для airdrop!');
+      }
     }
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background:
-        radial-gradient(circle at top, #15162f 0%, transparent 45%),
-        radial-gradient(circle at bottom, #140822 0%, transparent 55%),
-        #02030a;
-      color: #ffffff;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      overflow: hidden;
+    function updateUI() {
+      document.getElementById('tapCount').innerText = tapCount;
+      localStorage.setItem('tapCount', tapCount);
     }
-
-    /* неоновая сетка */
-    .grid-overlay {
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(25, 32, 75, 0.6) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(25, 32, 75, 0.6) 1px, transparent 1px);
-      background-size: 40px 40px;
-      opacity: 0.14;
-      pointer-events: none;
-      mix-blend-mode: screen;
-      z-index: -3;
-    }
-
-    /* горизонтальные скан‑линии */
-    .scanlines {
-      position: fixed;
-      inset: 0;
-      background-image: repeating-linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.4) 0,
-        rgba(0, 0, 0, 0.4) 1px,
-        transparent 1px,
-        transparent 3px
-      );
-      opacity: 0.35;
-      pointer-events: none;
-      z-index: -2;
-    }
-
-    /* большие мягкие глоу‑пятна */
-    .glow {
-      position: fixed;
-      width: 650px;
-      height: 650px;
-      border-radius: 50%;
-      filter: blur(60px);
-      opacity: 0.75;
-      z-index: -1;
-      animation: floatGlow 22s ease-in-out infinite alternate;
-    }
-
-    .glow.g1 {
-      top: -10%;
-      left: -10%;
-      background: radial-gradient(circle, rgba(0, 245, 255, 0.55), transparent 60%);
-    }
-
-    .glow.g2 {
-      bottom: -20%;
-      right: -10%;
-      background: radial-gradient(circle, rgba(155, 91, 255, 0.7), transparent 60%);
-      animation-duration: 26s;
-      animation-delay: -6s;
-    }
-
-    .glow.g3 {
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(255, 15, 123, 0.5), transparent 65%);
-      animation-duration: 30s;
-      animation-delay: -10s;
-    }
-
-    @keyframes floatGlow {
-      0% { transform: translate(-10%, -5%) scale(1); }
-      50% { transform: translate(8%, 4%) scale(1.05); }
-      100% { transform: translate(18%, 10%) scale(0.98); }
-    }
-
-    .shell {
-      position: relative;
-      width: min(980px, 100%);
-      padding: 30px 30px 26px;
-      border-radius: 28px;
-      background: radial-gradient(circle at top left, rgba(0, 245, 255, 0.14), transparent 60%),
-                  radial-gradient(circle at bottom right, rgba(155, 91, 255, 0.16), transparent 65%),
-                  rgba(5, 8, 30, 0.88);
-      border: 1px solid rgba(90, 113, 255, 0.6);
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.8),
-        0 0 32px rgba(0, 245, 255, 0.3),
-        0 0 64px rgba(155, 91, 255, 0.45);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      overflow: hidden;
-    }
-
-    .shell::before {
-      content: "";
-      position: absolute;
-      inset: -180px;
-      background: conic-gradient(
-        from 160deg,
-        transparent 0deg,
-        rgba(0, 245, 255, 0.7),
-        rgba(155, 91, 255, 0.85),
+  </script>
+</body>
+</html>
